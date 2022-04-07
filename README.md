@@ -6,11 +6,16 @@ Dister builds and bundles your wasm web app.
 `cargo install dister`
 
 ## Requirements
-- wasm32-unknown-unknown target
+- wasm32-unknown-unknown target:
+
 `rustup target add wasm32-unknown-unknown`
-- Wasm-bindgen
+
+- Wasm-bindgen:
+
 `cargo install wasm-bindgen-cli`
-- Miniserve (optional, to serve the outputted html file when using `dister serve`)
+
+- Miniserve (optional, to serve the outputted html file when using `dister serve`):
+
 `cargo install miniserve`
 
 ## Usage
