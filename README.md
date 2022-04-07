@@ -2,12 +2,15 @@
 
 Dister builds and bundles your wasm web app.
 
+## Installation
+`cargo install dister`
+
 ## Requirements
 - wasm32-unknown-unknown target
 `rustup target add wasm32-unknown-unknown`
 - Wasm-bindgen
 `cargo install wasm-bindgen-cli`
-- Miniserve (to serve the outputted html file)
+- Miniserve (optional, to serve the outputted html file when using `dister serve`)
 `cargo install miniserve`
 
 ## Usage
@@ -25,4 +28,5 @@ SUBCOMMANDS:
 From the root of your wasm rust applications directory, run:
 `dister build` or `dister build --release`
 
-It should generate a dist folder in the root. The generated html index file can then be served by any server or by running `dister serve`.
+It should generate a dist folder in the root. The generated html index file can then be served by any server or by running `dister serve`. If you prefer to use another server for development, pass the dist directory to the server:
+`python3 -m http.server --dir dist`
