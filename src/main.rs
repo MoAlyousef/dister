@@ -1,24 +1,26 @@
+use std::os::raw::c_char;
 use std::path::PathBuf;
-use std::process::Command;
 
 const USAGE: &str = r#"
 dister 0.1.0
-Builds your wasm web app.
+Builds and bundles your wasm web app.
 
 USAGE:
     dister <SUBCOMMAND>
 
 SUBCOMMANDS:
-    build     Build the Rust WASM app and all of its assets
+    build     Build your wasm web app
     clean     Clean output artifacts
-    serve     Serve the output
-    --help      Prints this message or the help of the given subcommand(s)
+    serve     Serve the generated index.html
+    --help    Prints this message or the help of the given subcommand(s)
 "#;
 
 const HTML: &str = r#"
 <html>
   <head>
-    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   </head>
   <body>
     <script src="./{{crate}}.js"></script>
@@ -30,6 +32,37 @@ const HTML: &str = r#"
   </body>
 </html>
 "#;
+
+struct Command {
+    name: String,
+    args: Vec<String>,
+}
+
+impl Command {
+    pub fn new(name: &str) -> Self {
+        Self {
+            name: name.to_string(),
+            args: vec![],
+        }
+    }
+
+    pub fn args(&mut self, a: &[&str]) {
+        self.args = a.iter().map(|s| s.to_string()).collect();
+    }
+
+    pub fn exec(self) -> bool {
+        extern "C" {
+            pub fn system(s: *const c_char) -> i32;
+        }
+        let mut cmd = self.name;
+        for arg in self.args {
+            cmd.push(' ');
+            cmd.push_str(&arg);
+        }
+        cmd.push('\0');
+        unsafe { system(cmd.as_ptr() as _) == 0 }
+    }
+}
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -64,23 +97,25 @@ fn handle_args(args: &[String]) {
             if !check_wasm_bindgen() {
                 eprintln!("wasm-bindgen-cli was not found, running a first-time install...");
                 let mut cargo = Command::new("cargo");
-                cargo.args(["install", "wasm-bindgen-cli"]);
-                cargo.output().expect("Failed to install wasm-bindgen!");
+                cargo.args(&["install", "wasm-bindgen-cli"]);
+                if !cargo.exec() {
+                    panic!("Failed to install wasm-bindgen!");
+                }
             }
             let mut cargo = Command::new("cargo");
-            cargo.args([
-                "build",
-                if release { "--release" } else { "" },
-                "--target",
-                "wasm32-unknown-unknown",
-            ]);
-            cargo
-                .output()
-                .expect("Failed to build for target wasm32-unknown-unknown!");
+            let mut cargo_args = vec!["build", "--target", "wasm32-unknown-unknown"];
+            if release {
+                cargo_args.push("--release");
+            }
+            cargo.args(&cargo_args);
+            if !cargo.exec() {
+                panic!("Failed to build for target wasm32-unknown-unknown!");
+            }
             let mut wb = Command::new("wasm-bindgen");
-            wb.args([&path, "--out-dir", "dist", "--target", "web", "--weak-refs"]);
-            wb.output()
-                .expect("Failed to run wasm-bindgen on the generated wasm binary");
+            wb.args(&[&path, "--out-dir", "dist", "--target", "web", "--weak-refs"]);
+            if !wb.exec() {
+                panic!("Failed to run wasm-bindgen on the generated wasm binary");
+            }
             let html = HTML.to_string().replace("{{crate}}", &crate_name);
             let dist = PathBuf::from("dist");
             if dist.exists() {
@@ -88,18 +123,31 @@ fn handle_args(args: &[String]) {
             }
         }
         "serve" => {
-            let cmd = Command::new("python3")
-                .args(["-m", "http.server", "--dir", "dist"])
-                .output()
-                .expect("Failed to run python server!");
-            println!("{}", cmd.status);
+            if !check_miniserve() {
+                eprintln!("miniserve was not found, running a first-time install...");
+                let mut cargo = Command::new("cargo");
+                cargo.args(&["install", "miniserve"]);
+                if !cargo.exec() {
+                    panic!("Failed to install miniserve!");
+                }
+            }
+            let mut serve = Command::new("miniserve");
+            serve.args(&["dist", "--index", "index.html"]);
+            if !serve.exec() {
+                panic!("Failed to exec miniserve!");
+            }
         }
         "clean" => {
             let mut cargo = Command::new("cargo");
-            cargo
-                .args(["clean"])
-                .output()
-                .expect("Failed to run cargo clean!");
+            cargo.args(&["clean"]);
+            if !cargo.exec() {
+                panic!("Failed to run cargo clean!");
+            }
+
+            let dist = PathBuf::from("dist");
+            if dist.exists() {
+                std::fs::remove_dir_all(dist).unwrap();
+            }
         }
         _ => {
             println!("{}", USAGE);
@@ -108,11 +156,13 @@ fn handle_args(args: &[String]) {
 }
 
 fn check_wasm_bindgen() -> bool {
-    let mut wb = Command::new("wasm-bindgen");
-    wb.args(["--help"]);
-    if let Ok(_) = wb.output() {
-        true
-    } else {
-        false
-    }
+    let mut wb = std::process::Command::new("wasm-bindgen");
+    wb.args(&["--help"]);
+    wb.output().is_ok()
+}
+
+fn check_miniserve() -> bool {
+    let mut wb = std::process::Command::new("miniserve");
+    wb.args(&["--help"]);
+    wb.output().is_ok()
 }
