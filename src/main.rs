@@ -112,7 +112,7 @@ fn handle_args(args: &[String]) {
                 panic!("Failed to build for target wasm32-unknown-unknown!");
             }
             let mut wb = Command::new("wasm-bindgen");
-            wb.args(&[&format!("{}", path.display()), "--out-dir", "dist", "--target", "web", "--weak-refs"]);
+            wb.args(&[&format!("{}", path.display()), "--out-dir", "dist", "--target", "web", "--weak-refs", "--no-typescript"]);
             if !wb.exec() {
                 panic!("Failed to run wasm-bindgen on the generated wasm binary");
             }
