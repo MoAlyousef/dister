@@ -86,15 +86,15 @@ fn handle_args(args: &[String]) {
                 std::fs::read_to_string("Cargo.toml").expect("Failed to find a Cargo.toml!");
             let pkg: toml::Value = cargo_toml.parse().unwrap();
             let crate_name = format!("{}", pkg["package"]["name"]).replace('"', "");
-            let mut path = String::from("./target/wasm32-unknown-unknown/");
+            let mut path = PathBuf::from("./target/wasm32-unknown-unknown/");
             if release {
-                path.push_str("release/");
+                path.join("release");
             } else {
-                path.push_str("debug/");
+                path.join("debug/");
             }
-            path.push_str(&crate_name);
-            path.push_str(".wasm");
-            if !check_wasm_bindgen() {
+            path.join(&crate_name);
+            path.join(".wasm");
+            if !check_prog("wasm-bindgen") {
                 eprintln!("wasm-bindgen-cli was not found, running a first-time install...");
                 let mut cargo = Command::new("cargo");
                 cargo.args(&["install", "wasm-bindgen-cli"]);
@@ -112,7 +112,7 @@ fn handle_args(args: &[String]) {
                 panic!("Failed to build for target wasm32-unknown-unknown!");
             }
             let mut wb = Command::new("wasm-bindgen");
-            wb.args(&[&path, "--out-dir", "dist", "--target", "web", "--weak-refs"]);
+            wb.args(&[&path.display(), "--out-dir", "dist", "--target", "web", "--weak-refs"]);
             if !wb.exec() {
                 panic!("Failed to run wasm-bindgen on the generated wasm binary");
             }
@@ -123,7 +123,7 @@ fn handle_args(args: &[String]) {
             }
         }
         "serve" => {
-            if !check_miniserve() {
+            if !check_prog("miniserve") {
                 eprintln!("miniserve was not found, running a first-time install...");
                 let mut cargo = Command::new("cargo");
                 cargo.args(&["install", "miniserve"]);
@@ -155,14 +155,9 @@ fn handle_args(args: &[String]) {
     }
 }
 
-fn check_wasm_bindgen() -> bool {
-    let mut wb = std::process::Command::new("wasm-bindgen");
+fn check_prog(prog: &str) -> bool {
+    let mut wb = std::process::Command::new(prog);
     wb.args(&["--help"]);
     wb.output().is_ok()
 }
 
-fn check_miniserve() -> bool {
-    let mut wb = std::process::Command::new("miniserve");
-    wb.args(&["--help"]);
-    wb.output().is_ok()
-}
