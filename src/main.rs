@@ -156,8 +156,8 @@ fn handle_args(args: &[String]) {
 }
 
 fn check_prog(prog: &str) -> bool {
-    let mut wb = std::process::Command::new(prog);
-    wb.args(&["--help"]);
-    wb.output().is_ok()
+    let mut cmd = std::process::Command::new(prog);
+    cmd.args(&["--help"]);
+    cmd.output().is_ok()
 }
 
