@@ -12,7 +12,7 @@ SUBCOMMANDS:
     build     Build your wasm web app
     clean     Clean output artifacts
     serve     Serve the generated index.html
-    --help    Prints this message or the help of the given subcommand(s)
+    --help    Prints this message
 "#;
 
 const HTML: &str = r#"
@@ -148,6 +148,9 @@ fn handle_args(args: &[String]) {
             if dist.exists() {
                 std::fs::remove_dir_all(dist).unwrap();
             }
+        }
+        "--help" | "--version" => {
+            println!("{}", USAGE);
         }
         _ => {
             println!("{}", USAGE);
