@@ -86,14 +86,13 @@ fn handle_args(args: &[String]) {
                 std::fs::read_to_string("Cargo.toml").expect("Failed to find a Cargo.toml!");
             let pkg: toml::Value = cargo_toml.parse().unwrap();
             let crate_name = format!("{}", pkg["package"]["name"]).replace('"', "");
-            let mut path = PathBuf::from("./target/wasm32-unknown-unknown/");
+            let mut path = PathBuf::from("target").join("wasm32-unknown-unknown");
             if release {
-                path.join("release");
+                path = path.join("release");
             } else {
-                path.join("debug/");
+                path = path.join("debug");
             }
-            path.join(&crate_name);
-            path.join(".wasm");
+            path = path.join(&format!("{}.wasm", &crate_name));
             if !check_prog("wasm-bindgen") {
                 eprintln!("wasm-bindgen-cli was not found, running a first-time install...");
                 let mut cargo = Command::new("cargo");
