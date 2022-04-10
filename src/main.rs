@@ -119,6 +119,12 @@ fn build(args: &[String]) {
     }
     cargo.args(&cargo_args);
     cargo.spawn().unwrap().wait().unwrap();
+    if check_prog("wasm-opt") && release {
+        let mut opt = Command::new("wasm-opt");
+        let path = format!("{}", path.display());
+        opt.args(&[&path, "-O3", "-o", &path]);
+        opt.spawn().unwrap().wait().unwrap();
+    }
     let mut wb = Command::new("wasm-bindgen");
     wb.args(&[
         &format!("{}", path.display()),

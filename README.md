@@ -18,6 +18,10 @@ Dister builds and bundles your wasm web app.
 
 `cargo install miniserve`
 
+- Wasm-opt (optional, wasm-opt is called if found in PATH and the --release flag is passed to `dister build`).
+
+It can be downloaded from the [binaryen repo's releases](https://github.com/WebAssembly/binaryen/releases).
+
 ## Usage
 ```
 USAGE:
