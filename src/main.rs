@@ -48,7 +48,10 @@ fn handle_args(args: &[String]) {
     }
     match args[1].as_str() {
         "build" => build(args),
-        "serve" => serve(),
+        "serve" => {
+            build(args);
+            serve();
+        },
         "clean" => clean(),
         "--help" | "--version" => help(),
         _ => help(),
