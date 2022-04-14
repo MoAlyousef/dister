@@ -81,14 +81,14 @@ fn clean() {
 }
 
 fn serve() {
-    if !check_prog("miniserve") {
-        eprintln!("miniserve was not found, running a first-time install...");
+    if !check_prog("microserver") {
+        eprintln!("microserver was not found, running a first-time install...");
         let mut cargo = Command::new("cargo");
-        cargo.args(&["install", "miniserve"]);
+        cargo.args(&["install", "microserver"]);
         cargo.spawn().unwrap().wait().unwrap();
     }
-    let mut serve = Command::new("miniserve");
-    serve.args(&["dist", "--index", "index.html"]);
+    let mut serve = Command::new("microserver");
+    serve.args(&["dist"]);
     serve.spawn().unwrap().wait().unwrap();
 }
 

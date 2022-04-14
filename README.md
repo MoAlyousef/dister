@@ -14,9 +14,9 @@ Dister builds and bundles your wasm web app.
 
 `cargo install wasm-bindgen-cli`
 
-- Miniserve (optional, to serve the outputted html file when using `dister serve`):
+- microserver (optional, to serve the outputted html file when using `dister serve`):
 
-`cargo install miniserve`
+`cargo install microserver`
 
 - Wasm-opt (optional, wasm-opt is called if found in PATH and the --release flag is passed to `dister build`).
 
