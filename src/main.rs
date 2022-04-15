@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 use std::process::Command;
+mod server;
 
 const USAGE: &str = r#"dister {{VERSION}}
 Builds and bundles your wasm web app.
@@ -81,15 +82,8 @@ fn clean() {
 }
 
 fn serve() {
-    if !check_prog("microserver") {
-        eprintln!("microserver was not found, running a first-time install...");
-        let mut cargo = Command::new("cargo");
-        cargo.args(&["install", "microserver"]);
-        cargo.spawn().unwrap().wait().unwrap();
-    }
-    let mut serve = Command::new("microserver");
-    serve.args(&["dist"]);
-    serve.spawn().unwrap().wait().unwrap();
+    println!("Dister server running on http://0.0.0.0:8080!\nServing dist/");
+    server::Server::serve("8080", &std::env::current_dir().unwrap().join("dist"));
 }
 
 fn build(args: &[String]) {
