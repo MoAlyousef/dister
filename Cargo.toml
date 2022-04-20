@@ -1,6 +1,6 @@
 [package]
 name = "dister"
-version = "0.1.8"
+version = "0.1.9"
 edition = "2021"
 description = "Builds and bundles your wasm web app"
 license = "MIT"
@@ -11,3 +11,7 @@ keywords = ["wasm", "bundler", "web", "build-tool"]
 
 [dependencies]
 livid-cli = "0.1.6"
+
+[profile.release]
+opt-level = 3
+strip = true
