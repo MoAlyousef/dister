@@ -1,6 +1,6 @@
 [package]
 name = "dister"
-version = "0.1.7"
+version = "0.1.8"
 edition = "2021"
 description = "Builds and bundles your wasm web app"
 license = "MIT"
